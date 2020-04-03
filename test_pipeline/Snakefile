@@ -1,0 +1,41 @@
+rule mapping:
+	input:
+		fast5_dir="methylation_example/fast5_files/",
+		reads="methylation_example/{sample}.fastq",
+		reference="methylation_example/reference.fasta"
+	output:
+		"nanopolish_out/{sample}.bam"
+	shell:
+		"""
+		nanopolish index -d {input.fast5_dir} {input.reads}
+		minimap2 -a -x map-ont {input.reference} {input.reads} | samtools sort -T tmp -o {output}
+		samtools index {output}
+		"""
+
+rule nanopolish_mt:
+	input:
+		mapped_reads="nanopolish_out/{sample}.bam",
+		reads="methylation_example/{sample}.fastq",
+		reference="methylation_example/reference.fasta"
+	output:
+		"nanopolish_out/{sample}.tsv"
+	shell:
+		"nanopolish call-methylation -t 8 -r {input.reads} -b {input.mapped_reads} -g {input.reference} -w 'chr20:5,000,000-10,000,000' > {output}"
+
+rule longshot_ht:
+	input:
+		"nanopolish_out/{sample}.bam"
+	output:
+		bam_file="longshot_out/{sample}.bam",
+		vcf_file="longshot_out/{sample}.vcf"
+	shell:
+		"longshot -r chr20:5000000-10000000 --bam {input} --ref methylation_example/reference.fasta --out {output.vcf_file} --out_bam {output.bam_file}"
+
+rule add_ht:
+	input:
+		bam_file="longshot_out/{sample}.bam",
+		tsv_file="nanopolish_out/{sample}.tsv"
+	output:
+		"add_ht/{sample}.tsv"
+	shell:
+		"python3 ../add_ht.py -hb {input.bam_file} -mt {input.tsv_file} -o {output}"

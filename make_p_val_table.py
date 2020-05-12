@@ -3,11 +3,18 @@
 import sys
 import csv
 import tqdm
+import argparse
 
 import scipy.special as sp
 from scipy.optimize import minimize
 from scipy.stats import chi2
 import numpy as np
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--input_file", type=str)
+parser.add_argument("-o", "--outpiut_file", type=str)
+parser.add_argument("-s", "--step", type=int, default=300)
+args = parser.parse_args()
 
 
 def L_fun(k, n, a, b):
@@ -16,7 +23,7 @@ def L_fun(k, n, a, b):
     result = 0
     for pos_n, pos_k in zip(n, k):
         result += -np.log(pos_n + 1) - sp.betaln(pos_n - pos_k + 1, pos_k + 1) - sp.betaln(a, b) \
-            + sp.betaln(a + pos_k, b + pos_n - pos_k)
+                  + sp.betaln(a + pos_k, b + pos_n - pos_k)
     return result
 
 
@@ -55,7 +62,7 @@ def write_p_value(chrom, start, end, k_1, n_1, k_2, n_2, writer, method='nelder-
     p_val = 1 - chi2.cdf(D, 2)
 
     out_row = dict(chrom=chrom, start=start, end=end, reads1=reads1, reads2=reads2,
-        a1=a1, b1=b1, l1=l1, a2=a2, b2=b2, l2=l2, a0=a0, b0=b0, l0=l0, D=D, p_val=p_val, n_pos=len(k_1))
+                   a1=a1, b1=b1, l1=l1, a2=a2, b2=b2, l2=l2, a0=a0, b0=b0, l0=l0, D=D, p_val=p_val, n_pos=len(k_1))
     writer.writerow(out_row)
 
 
@@ -108,19 +115,16 @@ def interval_table(reader, writer, step=300):
 
 
 def main():
-    with open(sys.argv[1]) as inp, open(sys.argv[2], 'w') as outp:
+    with open(args.input_file) as inp, open(args.output_file, 'w') as outp:
         reader = csv.DictReader(inp, delimiter='\t')
         outp.write('# %s\n' % ' '.join(sys.argv))
         writer = csv.DictWriter(outp, delimiter='\t', quoting=csv.QUOTE_NONE, dialect='unix', restval='NA',
-            fieldnames=["chrom", "start", "end", "reads1", "reads2", "a1", "b1", "l1", "a2", "b2", "l2",
-            "a0", "b0", "l0", "D", "n_pos", "p_val"])
+                                fieldnames=["chrom", "start", "end", "reads1", "reads2", "a1", "b1", "l1", "a2", "b2",
+                                            "l2",
+                                            "a0", "b0", "l0", "D", "n_pos", "p_val"])
         writer.writeheader()
 
-        if len(sys.argv) > 3:
-            step = int(sys.argv[3])
-        else:
-            step = 300
-        interval_table(reader, writer, step=step)
+        interval_table(reader, writer, step=args.step)
 
 
 if __name__ == '__main__':

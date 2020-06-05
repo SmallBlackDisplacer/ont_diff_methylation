@@ -3,6 +3,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-f", "--file_name", type=str)
+parser.add_argument("-o", "--output_file", type=str)
 args = parser.parse_args()
 
 haplo_df = pd.read_csv(args.file_name, sep='\t')
@@ -22,4 +23,4 @@ minimalistic_pivot = minimalistic.pivot_table(values="Count", index=['chromosome
 ind = pd.Index([str(e[0]) + str(e[1]) for e in minimalistic_pivot.columns.tolist()])
 minimalistic_pivot.columns = ind
 
-minimalistic_pivot.to_csv('albout_met_2.tsv', sep='\t', index=False)
+minimalistic_pivot.to_csv(args.output_file, sep='\t', index=False)

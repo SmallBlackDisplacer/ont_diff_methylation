@@ -39,3 +39,19 @@ rule add_ht:
 		"add_ht/{sample}.tsv"
 	shell:
 		"python3 ../add_ht.py -hb {input.bam_file} -mt {input.tsv_file} -o {output}"
+
+rule make_pivot:
+    input:
+        "add_ht/{sample}.tsv"
+    output:
+        "pivot/{sample}.tsv"
+    shell:
+        "python3 ../make_pivot_table.py -f {input} -o {output}"
+
+rule calc_p_val:
+    input:
+        "pivot/{sample}.tsv"
+    output:
+        "p_val_result/{sample}.tsv"
+    shell:
+        "python3 ../make_p_val_table.py -f {input} -o {output}"

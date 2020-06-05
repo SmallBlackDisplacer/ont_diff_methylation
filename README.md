@@ -10,11 +10,11 @@ We propose a model, in which the number of methylated reads per site is determin
 
 ## Dependencies
 
-Nanopolish >= 0.11.3
-Minimap2 >= 2.17-r974-dirty
-Longshot >= 0.4.1
-Snakemake >= 5.19.2
-python >= 3.7  
+Nanopolish >= 0.11.3  
+Minimap2 >= 2.17-r974-dirty  
+Longshot >= 0.4.1  
+Snakemake >= 5.19.2  
+python >= 3.7   
 install the dependencies via  
 ```pip install -r requirements.txt --user```  
 
